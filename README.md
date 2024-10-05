@@ -19,6 +19,8 @@ hcloud_token = "<token here>"
 
 - Run `terraform init` to setup terraform and install the hetzner providers
 
+- Install [pre-commit](https://pre-commit.com/) and run `pre-commit install` to automatically run pre-commit checks on each git commit
+
 ## Usage
 
 To bring up an instance and connect to it:

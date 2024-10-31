@@ -5,10 +5,31 @@ terraform {
       source  = "hetznercloud/hcloud"
       version = "~> 1.45"
     }
+    tailscale = {
+      source  = "tailscale/tailscale"
+      version = ">= 0.17.2"
+    }
   }
 }
 
+# PROVIDERS
+
+provider "hcloud" {
+  token = var.hcloud_token
+}
+
+provider "tailscale" {
+  api_key = var.tailscale_token
+}
+
+# VARS
+
 variable "hcloud_token" {
+  sensitive = true
+  type      = string
+}
+
+variable "tailscale_token" {
   sensitive = true
   type      = string
 }
@@ -18,9 +39,7 @@ variable "ssh_authorized_key" {
   type        = string
 }
 
-provider "hcloud" {
-  token = var.hcloud_token
-}
+# RESOURCES
 
 resource "hcloud_ssh_key" "dev_key" {
   name       = "dev_key"
@@ -37,6 +56,7 @@ resource "hcloud_server" "backend" {
   ssh_keys           = [hcloud_ssh_key.dev_key.id]
   user_data = templatefile("${path.module}/user_data.yaml.tpl", {
     ssh_authorized_key = var.ssh_authorized_key
+    tailscale_token    = var.tailscale_token
   })
   # Only needed for provisioners
   # connection {
@@ -51,6 +71,8 @@ resource "hcloud_server" "backend" {
     ipv6_enabled = false
   }
 }
+
+# OUTPUTS
 
 output "server_ip" {
   value       = hcloud_server.backend.ipv4_address

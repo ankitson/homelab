@@ -2,6 +2,11 @@
 
 This repo holds the operations related tooling for the homelab. Right now, it creates an instance on Hetzner Cloud with Docker installed using Terraform.
 
+# TODO
+
+- is cloud-init even running? directories not created, tailscale not installed, nginx doesnt seem to be running until i check the status with systemctl?
+
+
 ## Dependencies
 
 - [Terraform](https://developer.hashicorp.com/terraform/install?product_intent=terraform)

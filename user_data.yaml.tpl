@@ -8,8 +8,11 @@ users:
       - ${ssh_authorized_key}
 package_update: true
 package_upgrade: true
-apt:
+# apt:
   # sources:
+    # tailscale.list:
+      # source: "deb [signed-by=/usr/share/keyrings/tailscale-archive-keyring.gpg] https://pkgs.tailscale.com/stable/ubuntu noble main"
+      # keyid: 458CA832957F5868
     # docker.list:
       # source: deb [arch=amd64] https://download.docker.com/linux/ubuntu $RELEASE stable
       # keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
@@ -23,6 +26,13 @@ packages:
   # - docker-buildx-plugin
   # - docker-compose-plugin
 runcmd:
+  - mkdir -p /home/dev/code/
+  - chown -R dev:dev /home/dev/code
+  - curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
+  - curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list
+  - apt update
+  - apt install tailscale
+  - tailscale up --authkey=${tailscale_token}
   - systemctl enable nginx
   - ufw allow 'Nginx HTTP'
   - printf "[sshd]\nenabled = true\nbanaction = iptables-multiport" > /etc/fail2ban/jail.local

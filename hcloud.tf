@@ -1,4 +1,5 @@
 terraform {
+  required_version = ">= 1.9.6"
   required_providers {
     hcloud = {
       source  = "hetznercloud/hcloud"
@@ -9,6 +10,7 @@ terraform {
 
 variable "hcloud_token" {
   sensitive = true
+  type      = string
 }
 
 variable "ssh_authorized_key" {
@@ -25,15 +27,6 @@ resource "hcloud_ssh_key" "dev_key" {
   public_key = var.ssh_authorized_key
 }
 
-
-
-# data "template_file" "user_data" {
-#   template = file("user_data.yaml.tpl")
-#   vars = {
-#     ssh_authorized_key = var.ssh_authorized_key
-#   }
-# }
-
 resource "hcloud_server" "backend" {
   name               = "homelab"
   image              = "docker-ce"
@@ -41,16 +34,17 @@ resource "hcloud_server" "backend" {
   location           = "hil"
   delete_protection  = false
   rebuild_protection = false
-  ssh_keys           = [data.hcloud_ssh_key.dev_key.id]
+  ssh_keys           = [hcloud_ssh_key.dev_key.id]
   user_data = templatefile("${path.module}/user_data.yaml.tpl", {
     ssh_authorized_key = var.ssh_authorized_key
   })
-  connection {
-    type        = "ssh"
-    user        = "dev"
-    private_key = file("./keys/dev.pem")
-    host        = self.ipv4_address
-  }
+  # Only needed for provisioners
+  # connection {
+  #   type        = "ssh"
+  #   user        = "dev"
+  #   private_key = file("./keys/dev.pem")
+  #   host        = self.ipv4_address
+  # }
 
   public_net {
     ipv4_enabled = true

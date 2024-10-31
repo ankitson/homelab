@@ -8,3 +8,7 @@
 secrets.auto.tfvars
 deadlock.pem
 *.pem
+
+# OS Files
+.DS_Store
+Thumbs.db

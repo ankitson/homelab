@@ -20,30 +20,35 @@ provider "hcloud" {
   token = var.hcloud_token
 }
 
-data "hcloud_ssh_key" "deadlock_key" {
-  name = "deadlock-dev"
+resource "hcloud_ssh_key" "dev_key" {
+  name       = "dev_key"
+  public_key = var.ssh_authorized_key
 }
 
-data "template_file" "user_data" {
-  template = file("user_data.yaml.tpl")
-  vars = {
-    ssh_authorized_key = var.ssh_authorized_key
-  }
-}
+
+
+# data "template_file" "user_data" {
+#   template = file("user_data.yaml.tpl")
+#   vars = {
+#     ssh_authorized_key = var.ssh_authorized_key
+#   }
+# }
 
 resource "hcloud_server" "backend" {
-  name               = "deadlock-backend"
-  image              = "ubuntu-22.04"
-  server_type        = "ccx13"
+  name               = "homelab"
+  image              = "docker-ce"
+  server_type        = "cpx11"
   location           = "hil"
   delete_protection  = false
   rebuild_protection = false
-  ssh_keys           = [data.hcloud_ssh_key.deadlock_key.id]
-  user_data          = data.template_file.user_data.rendered
+  ssh_keys           = [data.hcloud_ssh_key.dev_key.id]
+  user_data = templatefile("${path.module}/user_data.yaml.tpl", {
+    ssh_authorized_key = var.ssh_authorized_key
+  })
   connection {
     type        = "ssh"
     user        = "dev"
-    private_key = file("./keys/deadlock.pem")
+    private_key = file("./keys/dev.pem")
     host        = self.ipv4_address
   }
 
@@ -64,6 +69,6 @@ output "server_status" {
 }
 
 output "ssh_command" {
-  value       = "ssh -o StrictHostKeyChecking=no -i keys/deadlock.pem dev@${hcloud_server.backend.ipv4_address}"
+  value       = "ssh -o StrictHostKeyChecking=no -i keys/dev.pem dev@${hcloud_server.backend.ipv4_address}"
   description = "SSH command to connect to the server"
 }

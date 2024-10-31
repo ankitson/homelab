@@ -1,6 +1,6 @@
-# Devops tooling for deadlock-dev
+# Devops tooling for homelab
 
-This repo holds the operations related tooling for the deadlock-dev project. Right now, it creates an instance on Hetzner Cloud with Docker installed using Terraform.
+This repo holds the operations related tooling for the homelab. Right now, it creates an instance on Hetzner Cloud with Docker installed using Terraform.
 
 ## Dependencies
 
@@ -15,7 +15,7 @@ This repo holds the operations related tooling for the deadlock-dev project. Rig
 hcloud_token = "<token here>"
 ```
 
-- Create a `keys` folder, and put the private SSH key in `keys/deadlock.pem` with `600` permissions.
+- Create a `keys` folder, and put the private SSH key in `keys/dev.pem` with `600` permissions.
 
 - Run `terraform init` to setup terraform and install the hetzner providers
 

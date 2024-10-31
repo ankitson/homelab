@@ -9,19 +9,19 @@ users:
 package_update: true
 package_upgrade: true
 apt:
-  sources:
-    docker.list:
-      source: deb [arch=amd64] https://download.docker.com/linux/ubuntu $RELEASE stable
-      keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+  # sources:
+    # docker.list:
+      # source: deb [arch=amd64] https://download.docker.com/linux/ubuntu $RELEASE stable
+      # keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
 packages:
   - nginx
   - fail2ban
   - ufw
-  - docker-ce
-  - docker-ce-cli
-  - containerd.io
-  - docker-buildx-plugin
-  - docker-compose-plugin
+  # - docker-ce
+  # - docker-ce-cli
+  # - containerd.io
+  # - docker-buildx-plugin
+  # - docker-compose-plugin
 runcmd:
   - systemctl enable nginx
   - ufw allow 'Nginx HTTP'

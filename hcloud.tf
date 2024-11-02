@@ -25,18 +25,18 @@ provider "tailscale" {
 # VARS
 
 variable "hcloud_token" {
-  # sensitive = true
-  type = string
+  sensitive = true
+  type      = string
 }
 
 variable "tailscale_api_key" {
-  # sensitive = true
-  type = string
+  sensitive = true
+  type      = string
 }
 
 variable "tailscale_token" {
-  # sensitive = true
-  type = string
+  sensitive = true
+  type      = string
 }
 
 variable "tailscale_hostname" {
@@ -86,7 +86,6 @@ resource "hcloud_server" "backend" {
     tailscale_token    = var.tailscale_token
     tailscale_hostname = var.tailscale_hostname
     tailscale_api_key  = var.tailscale_api_key
-    # cleanup_tailscale_sh_content = local.cleanup_tailscale_sh
   })
   # user_data = local.rendered_user_data
 

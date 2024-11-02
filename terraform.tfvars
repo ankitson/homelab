@@ -1,3 +1,5 @@
 hcloud_token       = "overridden in secrets.auto.tfvars"
 tailscale_token    = "overridden in secrets.auto.tfvars"
+tailscale_api_key  = "overridden in secrets.auto.tfvars"
+tailscale_hostname = "homelab"
 ssh_authorized_key = "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAvd+AJe8FuduvmoFSD6fpXM5qEsnmR2DTybKQFLkSlbdijLTeo3H67vTAwsBTbC+QMBubNpb0PY/UrJEVDxzvCimNWxJMA75ieFtpc14CSAyevRbma5t1m5An04i1tpMjDrcS3V5CScWWcMH33R2lPfrJUl9fo+m4ywle/keejpZyRkKgyADs00aJGU4PL7FqmR+zMxFLtOaoJwz9XI4LLf8o0NVHzczYOqSWSV/3v48q3Ia5oDTWwXlzPDWMxA7RQFw6sJchZ1FnTYuvnUoA44PK/VpecUiSKS1K4Forag8zoGdFQIJvQZ0fEYF+iBzgMTM8ZsMIgSXKKjJxUcBTfw== rsa-key-20190921"

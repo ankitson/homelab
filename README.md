@@ -4,7 +4,7 @@ This repo holds the operations related tooling for the homelab. Right now, it cr
 
 # TODO
 
-- is cloud-init even running? directories not created, tailscale not installed, nginx doesnt seem to be running until i check the status with systemctl?
+- ugh tailscale cleanup problem... cant pass in the variables to the script, or have to indent by 6 or some shit to get it to fit in the yaml just hacky bullshit
 
 
 ## Dependencies

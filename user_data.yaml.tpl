@@ -8,6 +8,46 @@ users:
       - ${ssh_authorized_key}
 package_update: true
 package_upgrade: true
+write_files:
+  - path: /etc/ssh/sshd_config
+    permissions: '0644'
+    content: |
+      Include /etc/ssh/sshd_config.d/*.conf
+      MaxAuthTries 2
+      KbdInteractiveAuthentication no
+      UsePAM yes
+
+      PasswordAuthentication no
+      PermitRootLogin no
+
+      AllowAgentForwarding no
+      AllowTcpForwarding no
+      X11Forwarding no
+      PrintMotd yes
+      AcceptEnv LANG LC_*
+      Subsystem       sftp    /usr/lib/openssh/sftp-server
+      AllowUsers dev
+  - path: /usr/local/bin/cleanup-tailscale.sh
+    permissions: '0755'
+    content: |
+      #!/bin/bash
+      set -e  # Exit on error
+      set -x
+
+      output=$(curl "https://api.tailscale.com/api/v2/tailnet/-/devices" \
+        -u "${tailscale_api_key}:")
+      echo $output
+      # Get device ID if it exists
+      DEVICE_IDS=$(curl "https://api.tailscale.com/api/v2/tailnet/-/devices" \
+        -u "${tailscale_api_key}:" \
+        | jq -r ".devices[] | select(.hostname == \"${tailscale_hostname}\") | .nodeId" || echo "")
+      while IFS= read -r id; do
+        if [[ ! -z "$id" ]]; then
+          echo "deleting tailscale device: $id";
+          curl -sSL -XDELETE  -u "${tailscale_api_key}:" "https://api.tailscale.com/api/v2/device/$id";
+        fi
+      done <<EOL
+      $DEVICE_IDS
 # apt:
 #   sources:
 #     tailscale.list:
@@ -34,10 +74,10 @@ packages:
 runcmd:
   - mkdir -p /home/dev/code/
   - chown -R dev:dev /home/dev/code
-  # - ['sh', '-c', 'curl -fsSL https://tailscale.com/install.sh | sh']
-  # - ['sh', '-c', "echo 'net.ipv4.ip_forward = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf && echo 'net.ipv6.conf.all.forwarding = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf && sudo sysctl -p /etc/sysctl.d/99-tailscale.conf" ]
-  # - /usr/local/bin/cleanup-tailscale.sh
-  # - ['tailscale', 'up', '--auth-key=${tailscale_token}', '--hostname=${tailscale_hostname}', '--reset']
+  - ['sh', '-c', 'curl -fsSL https://tailscale.com/install.sh | sh']
+  - ['sh', '-c', "echo 'net.ipv4.ip_forward = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf && echo 'net.ipv6.conf.all.forwarding = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf && sudo sysctl -p /etc/sysctl.d/99-tailscale.conf" ]
+  - /usr/local/bin/cleanup-tailscale.sh
+  - ['tailscale', 'up', '--auth-key=${tailscale_token}', '--hostname=${tailscale_hostname}', '--reset']
   # - curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
   # - curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list
   # - apt update
@@ -50,14 +90,6 @@ runcmd:
   - systemctl start fail2ban
   - ufw allow 'OpenSSH'
   - ufw enable
-  - sed -ie '/^PermitRootLogin/s/^.*$/PermitRootLogin no/' /etc/ssh/sshd_config
-  - sed -ie '/^PasswordAuthentication/s/^.*$/PasswordAuthentication no/' /etc/ssh/sshd_config
-  - sed -ie '/^X11Forwarding/s/^.*$/X11Forwarding no/' /etc/ssh/sshd_config
-  - sed -ie '/^#MaxAuthTries/s/^.*$/MaxAuthTries 2/' /etc/ssh/sshd_config
-  - sed -ie '/^#AllowTcpForwarding/s/^.*$/AllowTcpForwarding no/' /etc/ssh/sshd_config
-  - sed -ie '/^#AllowAgentForwarding/s/^.*$/AllowAgentForwarding no/' /etc/ssh/sshd_config
-  - sed -ie '/^#AuthorizedKeysFile/s/^.*$/AuthorizedKeysFile .ssh/authorized_keys/' /etc/ssh/sshd_config
-  - sed -i '$a AllowUsers dev' /etc/ssh/sshd_config
   - systemctl restart ssh
   - rm /var/www/html/*
   - echo "Hello! I am Nginx @ $(curl -s ipinfo.io/ip)! This record added at $(date -u)." >>/var/www/html/index.html

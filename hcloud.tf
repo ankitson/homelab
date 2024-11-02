@@ -53,18 +53,18 @@ variable "ssh_authorized_key" {
 #   tailscale_hostname = "homelab"
 # }
 
-locals {
-  cleanup_tailscale_sh = templatefile("${path.module}/cleanup-tailscale.sh.tpl", {
-    tailscale_api_key  = var.tailscale_api_key
-    tailscale_hostname = var.tailscale_hostname
-  })
-  rendered_user_data = templatefile("${path.module}/user_data.yaml.tpl", {
-    ssh_authorized_key           = var.ssh_authorized_key
-    tailscale_token              = var.tailscale_token
-    tailscale_hostname           = var.tailscale_hostname
-    cleanup_tailscale_sh_content = local.cleanup_tailscale_sh
-  })
-}
+# locals {
+#   cleanup_tailscale_sh = templatefile("${path.module}/cleanup-tailscale.sh.tpl", {
+#     tailscale_api_key  = var.tailscale_api_key
+#     tailscale_hostname = var.tailscale_hostname
+#   })
+#   rendered_user_data = templatefile("${path.module}/user_data.yaml.tpl", {
+#     ssh_authorized_key           = var.ssh_authorized_key
+#     tailscale_token              = var.tailscale_token
+#     tailscale_hostname           = var.tailscale_hostname
+#     cleanup_tailscale_sh_content = local.cleanup_tailscale_sh
+#   })
+# }
 
 # RESOURCES
 
@@ -91,29 +91,28 @@ resource "hcloud_server" "backend" {
   # user_data = local.rendered_user_data
 
   # Only needed for provisioners
-  connection {
-    type        = "ssh"
-    user        = "dev"
-    private_key = file("./keys/dev.pem")
-    host        = self.ipv4_address
-  }
-  provisioner "file" {
-    source      = "cleanup.sh"
-    destination = "/home/dev/cleanup-tailscale.sh"
-  }
-  provisioner "remote-exec" {
-    inline = [
-      # "sudo mv /home/dev/cleanup-tailscale.sh /usr/local/bin/cleanup-tailscale.sh",
-      "sudo cloud-init status --wait",
-      "sudo apt update",
-      "sudo apt install -y jq",
-      "export TAILSCALE_API_KEY=${var.tailscale_api_key}",
-      "export TAILSCALE_HOSTNAME=${var.tailscale_hostname}",
-      "sudo chmod +x /home/dev/cleanup-tailscale.sh",
-      "TAILSCALE_API_KEY=${var.tailscale_api_key} TAILSCALE_HOSTNAME=${var.tailscale_hostname} /home/dev/cleanup-tailscale.sh"
-
-    ]
-  }
+  # connection {
+  #   type        = "ssh"
+  #   user        = "dev"
+  #   private_key = file("./keys/dev.pem")
+  #   host        = self.ipv4_address
+  # }
+  # provisioner "file" {
+  #   source      = "cleanup.sh"
+  #   destination = "/home/dev/cleanup-tailscale.sh"
+  # }
+  # provisioner "remote-exec" {
+  #   inline = [
+  #     # "sudo mv /home/dev/cleanup-tailscale.sh /usr/local/bin/cleanup-tailscale.sh",
+  #     "sudo cloud-init status --wait",
+  #     "sudo apt update",
+  #     "sudo apt install -y jq",
+  #     "export TAILSCALE_API_KEY=${var.tailscale_api_key}",
+  #     "export TAILSCALE_HOSTNAME=${var.tailscale_hostname}",
+  #     "sudo chmod +x /home/dev/cleanup-tailscale.sh",
+  #     "TAILSCALE_API_KEY=${var.tailscale_api_key} TAILSCALE_HOSTNAME=${var.tailscale_hostname} /home/dev/cleanup-tailscale.sh"
+  #   ]
+  # }
   # Add destroy-time provisioner
   # provisioner "remote-exec" {
   #   when = destroy

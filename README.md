@@ -2,10 +2,20 @@
 
 This repo holds the operations related tooling for the homelab. Right now, it creates an instance on Hetzner Cloud with Docker installed using Terraform.
 
+# Terraform stuff
+
+- You can import resources defined online. e.g define a firewall in hetzner cloud UI, look at its ID, then do:
+
+`tf import hcloud_firewall.default 1707990`
+
+this imports it into state but not the definition. then do `terraform show` to show the copyable definitions for this new firewall
+
 # TODO
 
-- ugh tailscale cleanup problem... cant pass in the variables to the script, or have to indent by 6 or some shit to get it to fit in the yaml just hacky bullshit
+- Get Traefik setup as reverse proxy. Maybe consider private setup with tailscale:
+https://medium.com/@svenvanginkel/your-homelab-behind-tailscale-with-wildcard-dns-and-certificates-c68a881900bf
 
+- Set up Pinokio like thing to easily spin up AI models?
 
 ## Dependencies
 

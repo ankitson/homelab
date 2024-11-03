@@ -29,6 +29,8 @@ write_files:
       AllowUsers dev
   - path: /usr/local/bin/cleanup-tailscale.sh
     permissions: '0755'
+    # There's no way to overwrite an existing hostname in tailscale, so we have to delete it
+    # before starting tailscale. see https://github.com/tailscale/tailscale/issues/4778
     content: |
       #!/bin/bash
       set -e  # Exit on error
@@ -54,6 +56,7 @@ packages:
   - ufw
   - jq
 runcmd:
+  - sudo timedatectl set-timezone America/Vancouver
   - mkdir -p /home/dev/code/
   - chown -R dev:dev /home/dev/code
   - ['sh', '-c', 'curl -fsSL https://tailscale.com/install.sh | sh']

@@ -39,6 +39,11 @@ variable "tailscale_token" {
   type      = string
 }
 
+variable "cloudflare_token" {
+  sensitive = true
+  type      = string
+}
+
 variable "tailscale_hostname" {
   type = string
 }
@@ -50,6 +55,15 @@ variable "ssh_authorized_key" {
 
 variable "access_ips" {
   type = list(string)
+}
+
+variable "cloudflare_ips" {
+  type = list(string)
+}
+
+variable "deploy_domain" {
+  sensitive = true
+  type      = string
 }
 
 # RESOURCES
@@ -64,7 +78,7 @@ resource "hcloud_firewall" "default" {
     direction       = "in"
     port            = "80"
     protocol        = "tcp"
-    source_ips      = var.access_ips
+    source_ips      = concat(var.access_ips, var.cloudflare_ips)
   }
   rule {
     description     = "HTTPS"
@@ -72,7 +86,15 @@ resource "hcloud_firewall" "default" {
     direction       = "in"
     port            = "443"
     protocol        = "tcp"
-    source_ips      = var.access_ips
+    source_ips      = concat(var.access_ips, var.cloudflare_ips)
+  }
+  rule {
+    description     = "HTTPS/UDP"
+    destination_ips = []
+    direction       = "in"
+    port            = "443"
+    protocol        = "udp"
+    source_ips      = concat(var.access_ips, var.cloudflare_ips)
   }
   rule {
     description     = "PING"
@@ -80,7 +102,7 @@ resource "hcloud_firewall" "default" {
     direction       = "in"
     port            = null
     protocol        = "icmp"
-    source_ips      = var.access_ips
+    source_ips      = concat(var.access_ips, var.cloudflare_ips)
   }
   rule {
     description     = "SSH"
@@ -88,7 +110,7 @@ resource "hcloud_firewall" "default" {
     direction       = "in"
     port            = "22"
     protocol        = "tcp"
-    source_ips      = var.access_ips
+    source_ips      = concat(var.access_ips, var.cloudflare_ips)
   }
 }
 
@@ -116,6 +138,39 @@ resource "hcloud_server" "backend" {
   public_net {
     ipv4_enabled = true
     ipv6_enabled = true
+  }
+
+  connection {
+    type        = "ssh"
+    user        = "dev"
+    private_key = file("./keys/dev.pem")
+    host        = self.ipv4_address
+  }
+
+  # First create directories
+  provisioner "remote-exec" {
+    inline = [
+      "mkdir -p /home/dev/code/docker-data/actual-budget/data",
+      "mkdir -p /home/dev/code/docker-data/caddy/data",
+      "mkdir -p /home/dev/code/docker-data/caddy/config",
+      "chown -R dev:users /home/dev"
+    ]
+  }
+  # docker env
+  provisioner "file" {
+    content = templatefile("${path.module}/docker.env.tpl", {
+      cloudflare_token = var.cloudflare_token,
+      deploy_domain    = var.deploy_domain
+    })
+    destination = "/home/dev/code/.env"
+  }
+  provisioner "file" {
+    source      = "docker-compose.yaml"
+    destination = "/home/dev/code/docker-compose.yaml"
+  }
+  provisioner "file" {
+    source      = "Caddyfile"
+    destination = "/home/dev/code/Caddyfile"
   }
 }
 

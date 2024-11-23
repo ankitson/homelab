@@ -51,20 +51,19 @@ write_files:
       done <<EOL
       $DEVICE_IDS
 packages:
-  - nginx
   - fail2ban
   - ufw
   - jq
+# base image includes docker
 runcmd:
   - sudo timedatectl set-timezone America/Vancouver
-  - mkdir -p /home/dev/code/
-  - chown -R dev:dev /home/dev/code
   - ['sh', '-c', 'curl -fsSL https://tailscale.com/install.sh | sh']
   - ['sh', '-c', "echo 'net.ipv4.ip_forward = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf && echo 'net.ipv6.conf.all.forwarding = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf && sudo sysctl -p /etc/sysctl.d/99-tailscale.conf" ]
   - /usr/local/bin/cleanup-tailscale.sh
   - ['tailscale', 'up', '--auth-key=${tailscale_token}', '--hostname=${tailscale_hostname}', '--reset']
-  - systemctl enable nginx
-  - ufw allow 'Nginx HTTP'
+  - ufw allow 80/tcp
+  - ufw allow 443/tcp
+  - ufw allow 443/udp  # For HTTPS/3 support
   - printf "[sshd]\nenabled = true\nbanaction = iptables-multiport" > /etc/fail2ban/jail.local
   - systemctl enable fail2ban
   - systemctl start fail2ban
@@ -72,4 +71,4 @@ runcmd:
   - ufw enable
   - systemctl restart ssh
   - rm /var/www/html/*
-  - echo "Hello! I am Nginx @ $(curl -s ipinfo.io/ip)! This record added at $(date -u)." >>/var/www/html/index.html
+  - docker compose -f /home/dev/code/docker-compose.yaml up -d

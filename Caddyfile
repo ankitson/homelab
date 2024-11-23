@@ -1,0 +1,49 @@
+{
+	debug
+	admin :2019
+	log {
+		output stdout
+		format console
+		level DEBUG
+	}
+	auto_https disable_redirects
+	email cert@{$DEPLOY_DOMAIN}.com
+}
+
+{$DEPLOY_DOMAIN}, *.{$DEPLOY_DOMAIN} {
+	tls {
+		dns cloudflare {$CLOUDFLARE_TOKEN}
+	}
+	log {
+		output stdout
+		format console
+		level DEBUG
+	}
+	@actual host actual.{$DEPLOY_DOMAIN}
+	handle @actual {
+		encode gzip zstd
+		reverse_proxy actual_server1
+	}
+
+	handle {
+		respond "Hello!"
+	}
+}
+
+:80 {
+	# Listen on port 80 for all hostnames
+	@external host {$DEPLOY_DOMAIN} *.{$DEPLOY_DOMAIN}
+	handle @external {
+		abort # Skip this block for nopeslide domains
+	}
+
+	# Handle localhost requests
+	@whoami host whoami.localhost
+	handle @whoami {
+		reverse_proxy whoami
+	}
+
+	handle {
+		respond "Hello localhost!"
+	}
+}

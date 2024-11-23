@@ -1,6 +1,6 @@
-# Devops tooling for homelab
+# Homelab
 
-This repo holds the operations related tooling for the homelab. It creates an instance on Hetzner Cloud with Docker installed using Terraform, then sets up a Caddy reverse proxy and some basic services. Automatically fetches SSL certs and backs them up to avoid rate-limiting, sets up tailscale access.
+This repo holds the operations related tooling for the homelab. It creates an instance on Hetzner Cloud with Docker installed using Terraform, then sets up a Caddy reverse proxy and some basic services. Caddy automatically fetches SSL certs and terraform backs them up to avoid recreating them constantly and getting rate-limited by LetsEncrypt. It register the machine on tailscale and sets up reverse proxying on a real domain name, and a tailscale magicDNS domain name (although tailscale doesn't support subdomains - see [TODO](#todo)).
 
 ## Dependencies
 
@@ -29,6 +29,8 @@ $ docker build . -t ankit/caddy-cloudflare:0.x
 $ docker push ankit/caddy-cloudflare:0.x
 ```
 
+- The encryption mode on Cloudflare **must** be set to FULL not Mixed! With mixed, connection between cloudflare and Caddy is not encrypted, so Caddy will reject requests.
+
 
 ## Usage
 
@@ -51,11 +53,15 @@ To destroy the instance:
 terraform destroy
 ```
 
-# TODO
-
-- [ ] Set up Pinokio like thing to easily spin up AI models?
+## TODO
 
 - [ ] Setup caddy to work with tailscale hostnames - ability to host private and public services.
+
+  Tailscale only provides one hostname with MagicDNS, no subdomains. Using paths to route like "domain.com/service" and rewriting paths to subdomains causes problems with many services. Ideally we can use subdomains.
+
+- [ ] Hetzner IP seems to be fixed but could change. May need dynamic DNS or fixed IP.
+
+- [ ] Set up Pinokio like thing to easily spin up AI models?
 
 - [ ] Need a strategy to persist data when recreating server. Currently just copying files like with Caddystore. Maybe use S3/K2
 

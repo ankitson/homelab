@@ -71,5 +71,7 @@ runcmd:
   - ufw enable
   - systemctl restart ssh
   - rm /var/www/html/*
-  - chmod +x /home/dev/code/caddy.sh
+  - chmod +x /home/dev/code/docker-data/caddy/caddy.sh
   - docker compose -f /home/dev/code/docker-compose.yaml up -d
+  - docker compose cp caddy:/data/caddy/pki/authorities/local/root.crt /usr/local/share/ca-certificates/root.crt
+  - sudo update-ca-certificates

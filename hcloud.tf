@@ -66,6 +66,11 @@ variable "deploy_domain" {
   type      = string
 }
 
+variable "tailscale_domain" {
+  sensitive = true
+  type      = string
+}
+
 # RESOURCES
 
 resource "hcloud_firewall" "default" {
@@ -160,7 +165,8 @@ resource "hcloud_server" "backend" {
   provisioner "file" {
     content = templatefile("${path.module}/docker.env.tpl", {
       cloudflare_token = var.cloudflare_token,
-      deploy_domain    = var.deploy_domain
+      deploy_domain    = var.deploy_domain,
+      tailscale_domain = "${var.tailscale_hostname}.${var.tailscale_domain}"
     })
     destination = "/home/dev/code/.env"
   }
@@ -170,16 +176,16 @@ resource "hcloud_server" "backend" {
   }
   provisioner "file" {
     source      = "Caddyfile"
-    destination = "/home/dev/code/Caddyfile"
+    destination = "/home/dev/code/docker-data/caddy/Caddyfile"
   }
   # import the caddystore containing the certs
   provisioner "file" {
     source      = "Caddystore"
-    destination = "/home/dev/code/Caddystore"
+    destination = "/home/dev/code/docker-data/caddy/Caddystore"
   }
   provisioner "file" {
     source      = "caddy.sh"
-    destination = "/home/dev/code/caddy.sh"
+    destination = "/home/dev/code/docker-data/caddy/caddy.sh"
   }
 
   # export the caddy store including certs to avoid recreating each time server is deployed
@@ -195,7 +201,7 @@ resource "hcloud_server" "backend" {
   # Copy the exported storage back to local machine
   provisioner "local-exec" {
     when    = destroy
-    command = "scp -o StrictHostKeyChecking=no -i keys/dev.pem dev@${self.ipv4_address}:/home/dev/code/Caddystore Caddystore"
+    command = "scp -o StrictHostKeyChecking=no -i keys/dev.pem dev@${self.ipv4_address}:/home/dev/code/docker-data/caddy/Caddystore Caddystore"
   }
 }
 

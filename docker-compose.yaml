@@ -8,17 +8,19 @@ services:
       - TZ=America/Vancouver
       - CLOUDFLARE_TOKEN=${CLOUDFLARE_TOKEN}
       - DEPLOY_DOMAIN=${DEPLOY_DOMAIN}
+      - TAILSCALE_DOMAIN=${TAILSCALE_DOMAIN}
     ports:
       - "80:80"
       - "443:443"
       - "443:443/udp"
     volumes:
-      - ./caddy.sh:/entrypoint.sh
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - ./Caddystore:/etc/caddy/Caddystore
-      - ./site:/srv
+      - ./docker-data/caddy/caddy.sh:/entrypoint.sh
+      - ./docker-data/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ./docker-data/caddy/Caddystore:/etc/caddy/Caddystore
+      - ./docker-data/caddy/site:/srv
       - ./docker-data/caddy/data:/data
       - ./docker-data/caddy/config:/config
+      - /var/run/tailscale/tailscaled.sock:/var/run/tailscale/tailscaled.sock
     networks: ["web"]
 
   whoami:

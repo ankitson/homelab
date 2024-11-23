@@ -30,11 +30,11 @@
 	}
 }
 
-:80 {
-	# Listen on port 80 for all hostnames
+:80, :443 {
+	tls internal
 	@external host {$DEPLOY_DOMAIN} *.{$DEPLOY_DOMAIN}
 	handle @external {
-		abort # Skip this block for nopeslide domains
+		abort # Skip this block for external domains
 	}
 
 	# Handle localhost requests

@@ -3,7 +3,7 @@ services:
     container_name: caddy
     image: ankit/caddy-cloudflare:0.1
     restart: unless-stopped
-    entrypoint: ["caddy", "run", "--watch", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
+    entrypoint: ["/entrypoint.sh"]
     environment:
       - TZ=America/Vancouver
       - CLOUDFLARE_TOKEN=${CLOUDFLARE_TOKEN}
@@ -13,7 +13,9 @@ services:
       - "443:443"
       - "443:443/udp"
     volumes:
+      - ./caddy.sh:/entrypoint.sh
       - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./Caddystore:/etc/caddy/Caddystore
       - ./site:/srv
       - ./docker-data/caddy/data:/data
       - ./docker-data/caddy/config:/config

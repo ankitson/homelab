@@ -71,4 +71,5 @@ runcmd:
   - ufw enable
   - systemctl restart ssh
   - rm /var/www/html/*
+  - chmod +x /home/dev/code/caddy.sh
   - docker compose -f /home/dev/code/docker-compose.yaml up -d

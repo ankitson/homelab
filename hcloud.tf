@@ -172,6 +172,31 @@ resource "hcloud_server" "backend" {
     source      = "Caddyfile"
     destination = "/home/dev/code/Caddyfile"
   }
+  # import the caddystore containing the certs
+  provisioner "file" {
+    source      = "Caddystore"
+    destination = "/home/dev/code/Caddystore"
+  }
+  provisioner "file" {
+    source      = "caddy.sh"
+    destination = "/home/dev/code/caddy.sh"
+  }
+
+  # export the caddy store including certs to avoid recreating each time server is deployed
+  provisioner "remote-exec" {
+    when = destroy
+    inline = [
+      "cd /home/dev/code",
+      "sudo docker compose exec caddy caddy storage export -c /etc/caddy/Caddyfile -o /etc/caddy/Caddystore",
+      "sudo docker compose down"
+    ]
+  }
+
+  # Copy the exported storage back to local machine
+  provisioner "local-exec" {
+    when    = destroy
+    command = "scp -o StrictHostKeyChecking=no -i keys/dev.pem dev@${self.ipv4_address}:/home/dev/code/Caddystore Caddystore"
+  }
 }
 
 # OUTPUTS

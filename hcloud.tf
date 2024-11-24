@@ -187,6 +187,17 @@ resource "hcloud_server" "backend" {
     source      = "caddy.sh"
     destination = "/home/dev/code/docker-data/caddy/caddy.sh"
   }
+  provisioner "file" {
+    source      = "tailscaled.state"
+    destination = "/tmp/tailscaled.state"
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "sudo mkdir -p /var/lib/tailscale/",
+      "sudo mv /tmp/tailscaled.state /var/lib/tailscale/tailscaled.state",
+      "sudo chown root:root /var/lib/tailscale/tailscaled.state"
+    ]
+  }
 
   # export the caddy store including certs to avoid recreating each time server is deployed
   provisioner "remote-exec" {
@@ -198,11 +209,26 @@ resource "hcloud_server" "backend" {
     ]
   }
 
+
   # Copy the exported storage back to local machine
   provisioner "local-exec" {
     when    = destroy
     command = "scp -o StrictHostKeyChecking=no -i keys/dev.pem dev@${self.ipv4_address}:/home/dev/code/docker-data/caddy/Caddystore Caddystore"
   }
+  provisioner "remote-exec" {
+    when = destroy
+    inline = [
+      "sudo systemctl stop tailscaled",
+      "sudo mv /var/lib/tailscale/tailscaled.state /home/dev/tailscaled.state",
+      "sudo chown dev:dev /home/dev/tailscaled.state",
+    ]
+
+  }
+  provisioner "local-exec" {
+    when    = destroy
+    command = "scp -o StrictHostKeyChecking=no -i keys/dev.pem dev@${self.ipv4_address}:/home/dev/tailscaled.state tailscaled.state"
+  }
+
 }
 
 # OUTPUTS

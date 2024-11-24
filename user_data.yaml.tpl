@@ -59,8 +59,10 @@ runcmd:
   - sudo timedatectl set-timezone America/Vancouver
   - ['sh', '-c', 'curl -fsSL https://tailscale.com/install.sh | sh']
   - ['sh', '-c', "echo 'net.ipv4.ip_forward = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf && echo 'net.ipv6.conf.all.forwarding = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf && sudo sysctl -p /etc/sysctl.d/99-tailscale.conf" ]
-  - /usr/local/bin/cleanup-tailscale.sh
-  - ['tailscale', 'up', '--auth-key=${tailscale_token}', '--hostname=${tailscale_hostname}', '--reset']
+  - systemctl enable tailscaled
+  - systemctl start tailscaled
+  # - /usr/local/bin/cleanup-tailscale.sh
+  # - ['tailscale', 'up', '--auth-key=${tailscale_token}', '--hostname=${tailscale_hostname}', '--reset']
   - ufw allow 80/tcp
   - ufw allow 443/tcp
   - ufw allow 443/udp  # For HTTPS/3 support
@@ -73,5 +75,5 @@ runcmd:
   - rm /var/www/html/*
   - chmod +x /home/dev/code/docker-data/caddy/caddy.sh
   - docker compose -f /home/dev/code/docker-compose.yaml up -d
-  - docker compose cp caddy:/data/caddy/pki/authorities/local/root.crt /usr/local/share/ca-certificates/root.crt
+  - docker compose -f /home/dev/code/docker-compose.yaml cp caddy:/data/caddy/pki/authorities/local/root.crt /usr/local/share/ca-certificates/root.crt
   - sudo update-ca-certificates

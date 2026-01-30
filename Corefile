@@ -1,0 +1,10 @@
+. {
+    # Forward most requests to regular DNS
+    forward . 1.1.1.1
+}
+
+ts-homelab.myth-dab.ts.net {
+    file /etc/coredns/zones/ts-homelab.db
+    log
+    errors
+}

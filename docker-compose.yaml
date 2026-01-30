@@ -23,6 +23,21 @@ services:
       - /var/run/tailscale/tailscaled.sock:/var/run/tailscale/tailscaled.sock
     networks: ["web"]
 
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    restart: unless-stopped
+    environment:
+      TZ: 'America/Vancouver'
+      WEBPASSWORD: '${PIHOLE_PASSWORD}'  # Set in .env
+      VIRTUAL_HOST: 'pihole.nopeslide.com'
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+    volumes:
+      - './docker-data/pihole/etc-pihole:/etc/pihole'
+      - './docker-data/pihole/etc-dnsmasq.d:/etc/dnsmasq.d'
+    networks: [web]
   whoami:
     container_name: whoami
     image: traefik/whoami

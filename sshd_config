@@ -1,0 +1,15 @@
+Include /etc/ssh/sshd_config.d/*.conf
+MaxAuthTries 2
+KbdInteractiveAuthentication no
+UsePAM yes
+
+PasswordAuthentication no
+PermitRootLogin no
+
+AllowAgentForwarding no
+AllowTcpForwarding no
+X11Forwarding no
+PrintMotd no
+AcceptEnv LANG LC_*
+Subsystem       sftp    /usr/lib/openssh/sftp-server
+AllowUsers dev

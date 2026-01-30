@@ -73,6 +73,10 @@ runcmd:
   - ufw enable
   - systemctl restart ssh
   - rm /var/www/html/*
+  - systemctl stop systemd-resolved
+  - systemctl disable systemd-resolved
+  - rm /etc/resolv.conf
+  - echo "nameserver 1.1.1.1" > /etc/resolv.conf
   - chmod +x /home/dev/code/docker-data/caddy/caddy.sh
   - docker compose -f /home/dev/code/docker-compose.yaml up -d
   - docker compose -f /home/dev/code/docker-compose.yaml cp caddy:/data/caddy/pki/authorities/local/root.crt /usr/local/share/ca-certificates/root.crt

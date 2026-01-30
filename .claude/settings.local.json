@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /home/ankit/code/homelab/devops ls-files:*)",
+      "Bash(.gitignore)",
+      "Bash(wc:*)",
+      "Bash(git -C /home/ankit/code/homelab/devops log --oneline)"
+    ]
+  }
+}

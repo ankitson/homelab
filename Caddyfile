@@ -18,6 +18,10 @@
     encode gzip zstd
     reverse_proxy actual_server1
   }
+  @pihole host ``pihole.{$DEPLOY_DOMAIN}
+  handle @pihole {
+    reverse_proxy pihole
+  }
 
   handle {
     respond "Hello!"

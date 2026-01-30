@@ -71,6 +71,11 @@ variable "tailscale_domain" {
   type      = string
 }
 
+variable "pihole_password" {
+  sensitive = true
+  type      = string
+}
+
 # RESOURCES
 
 resource "hcloud_firewall" "default" {
@@ -158,6 +163,8 @@ resource "hcloud_server" "backend" {
       "mkdir -p /home/dev/code/docker-data/actual-budget/data",
       "mkdir -p /home/dev/code/docker-data/caddy/data",
       "mkdir -p /home/dev/code/docker-data/caddy/config",
+      # "mkdir -p /home/dev/code/docker-data/coredns/",
+      "mkdir -p /home/dev/code/docker-data/pihole/",
       "chown -R dev:users /home/dev"
     ]
   }
@@ -166,7 +173,8 @@ resource "hcloud_server" "backend" {
     content = templatefile("${path.module}/docker.env.tpl", {
       cloudflare_token = var.cloudflare_token,
       deploy_domain    = var.deploy_domain,
-      tailscale_domain = "${var.tailscale_hostname}.${var.tailscale_domain}"
+      tailscale_domain = "${var.tailscale_hostname}.${var.tailscale_domain}",
+      pihole_password  = var.pihole_password
     })
     destination = "/home/dev/code/.env"
   }
